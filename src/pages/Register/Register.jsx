@@ -1,33 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Register.module.css";
+import { useAuthentication } from "../../hooks/use.Authentication";
 
 const Register = () => {
-  const [displayName, setDisplayName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const { createUser, error: authError, loading } = useAuthentication();
 
-    setError("")
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setError("");
 
     const user = {
       displayName,
       email,
       password,
-      confirmPassword
+      confirmPassword,
+    };
+
+    if (password !== confirmPassword) {
+      setError("As senhas precisam ser iguais!");
     }
 
-    if(password !== confirmPassword) {
-      setError("As senhas precisam ser iguais!")
-    }
+    const res = await createUser(user)
 
-    console.log(user);
-    console.log(error);
-    
-  }
+    console.log(res);
+  };
+
+  useEffect(() => {
+    if (authError) {
+      setError(authError)
+    }
+  }, [authError])
 
   return (
     <div className={styles.register}>
@@ -82,8 +91,9 @@ const Register = () => {
           />
         </label>
 
-        <button className="btn">Cadastrar</button>
-        {error && <p className='error'>{error}</p>}
+        {!loading && <button className="btn">Cadastrar</button>}
+        {loading && <button className="btn" disabled>Aguarde...</button>}
+        {error && <p className="error">{error}</p>}
       </form>
     </div>
   );
